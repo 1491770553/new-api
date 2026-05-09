@@ -36,6 +36,11 @@ func sendStreamData(c *gin.Context, info *relaycommon.RelayInfo, data string, fo
 		return err
 	}
 
+	// Replace model name with origin model name for client response
+	if info.OriginModelName != "" {
+		lastStreamResponse.Model = info.OriginModelName
+	}
+
 	if !thinkToContent {
 		return helper.ObjectData(c, lastStreamResponse)
 	}
@@ -111,7 +116,10 @@ func OaiStreamHandler(c *gin.Context, info *relaycommon.RelayInfo, resp *http.Re
 
 	defer service.CloseResponseBodyGracefully(resp)
 
-	model := info.UpstreamModelName
+	model := info.OriginModelName
+	if model == "" {
+		model = info.UpstreamModelName
+	}
 	var responseId string
 	var createAt int64 = 0
 	var systemFingerprint string
